@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" th:dir="#{language.direction}" th:data-language="${#locale.toString()}" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <th:block th:insert="~{fragments/common :: head(title=#{getPdfInfo.title}, header=#{getPdfInfo.header})}"></th:block>
+  </head>
+
+  <body>
+    <div id="page-container">
+      <div id="content-wrap">
+        <th:block th:insert="~{fragments/navbar.html :: navbar}"></th:block>
+        <div class="container mt-4">
+          <div class="row justify-content-center">
+            <div class="col-md-8">
+              <md-card class="p-4">
+                <div class="tool-header mb-4">
+                  <md-icon class="tool-header-icon other">info</md-icon>
+                  <span class="tool-header-text" th:text="#{getPdfInfo.header}"></span>
+                </div>
+
+                <form id="pdfInfoForm" method="post" enctype="multipart/form-data" th:action="@{'/api/v1/security/get-info-on-pdf'}">
+                  <md-filled-button class="file-input-button w-100 mb-4">
+                    <label for="fileInput" class="w-100">
+                      <span th:text="#{common.chooseFile}"></span>
+                      <input type="file" class="d-none" id="fileInput" name="fileInput" required accept="application/pdf">
+                    </label>
+                  </md-filled-button>
+                  
+                  <div id="fileDisplay" class="mb-4 d-none">
+                    <md-chip-set>
+                      <md-assist-chip id="selectedFile"></md-assist-chip>
+                    </md-chip-set>
+                  </div>
+
+                  <md-filled-button type="submit" id="submitBtn">
+                    <span th:text="#{getPdfInfo.submit}"></span>
+                  </md-filled-button>
+                </form>
+
+                <div class="mt-4">
+                  <div id="json-content">
+                    <!-- JavaScript will populate this section -->
+                  </div>
+
+                  <md-filled-tonal-button id="downloadJson" class="mt-4" style="display: none;">
+                    <md-icon slot="icon">download</md-icon>
+                    <span th:text="#{getPdfInfo.downloadJson}"></span>
+                  </md-filled-tonal-button>
+                </div>
+              </md-card>
+            </div>
+          </div>
+        </div>
+      </div>
+      <th:block th:insert="~{fragments/footer.html :: footer}"></th:block>
+    </div>
+
+    <script th:src="@{'/js/fetch-utils.js'}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('fileInput');
+        const fileDisplay = document.getElementById('fileDisplay');
+        const selectedFile = document.getElementById('selectedFile');
+
+        fileInput.addEventListener('change', function() {
+          if (this.files.length > 0) {
+            fileDisplay.classList.remove('d-none');
+            selectedFile.textContent = this.files[0].name;
+          } else {
+            fileDisplay.classList.add('d-none');
+          }
+        });
+
+        document.getElementById("pdfInfoForm").addEventListener("submit", function(event) {
+          event.preventDefault();
+          const formData = new FormData(event.target);
+
+          fetchWithCsrf('api/v1/security/get-info-on-pdf', {
+            method: 'POST',
+            body: formData
+          }).then(response => response.json()).then(data => {
+            displayJsonData(data);
+            setDownloadLink(data);
+            document.getElementById("downloadJson").style.display = "block";
+          }).catch(error => console.error('Error:', error));
+        });
+
+        function displayJsonData(jsonData) {
+          const jsonContent = document.getElementById('json-content');
+          jsonContent.innerHTML = '';
+
+          for (const key in jsonData) {
+            const sectionElem = createJsonSection(key, jsonData[key]);
+            jsonContent.appendChild(sectionElem);
+          }
+        }
+
+        function setDownloadLink(jsonData) {
+          const downloadLink = document.getElementById('downloadJson');
+          const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(jsonData, null, 4));
+          downloadLink.addEventListener('click', function() {
+            const a = document.createElement('a');
+            a.href = dataStr;
+            a.download = 'data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+          });
+        }
+
+        function createJsonSection(key, value, depth = 0) {
+          const safeKey = (typeof key === "string") ? key.replace(/[^a-zA-Z0-9]/g, '_') : key;
+          
+          const section = document.createElement('md-elevation');
+          section.className = 'mb-3 p-3';
+          section.setAttribute('level', '1');
+
+          if (key === 'XMPMetadata' && typeof value === "string") {
+            section.appendChild(createExpandableSection(key, value, safeKey, depth));
+          } else if (value && typeof value === 'object') {
+            if (Array.isArray(value) && value.length === 0) {
+              section.textContent = `${key}: Empty array`;
+            } else if (!Array.isArray(value) && Object.keys(value).length === 0) {
+              section.textContent = `${key}: Empty object`;
+            } else {
+              section.appendChild(createExpandableSection(key, value, safeKey, depth));
+            }
+          } else {
+            const text = document.createElement('md-text');
+            text.textContent = `${key}: ${String(value)}`;
+            section.appendChild(text);
+          }
+
+          return section;
+        }
+
+        function createExpandableSection(key, value, safeKey, depth) {
+          const details = document.createElement('details');
+          const summary = document.createElement('summary');
+          summary.className = 'md-list-item';
+          summary.textContent = key;
+          details.appendChild(summary);
+
+          const content = document.createElement('div');
+          content.className = 'pl-3 mt-2';
+
+          if (key === 'XMPMetadata' && typeof value === "string") {
+            const pre = document.createElement('pre');
+            pre.className = 'mt-2';
+            pre.textContent = value;
+            content.appendChild(pre);
+          } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+            for (const subKey in value) {
+              content.appendChild(createJsonSection(subKey, value[subKey], depth + 1));
+            }
+          } else if (value && Array.isArray(value)) {
+            value.forEach((val, index) => {
+              content.appendChild(createJsonSection(`${key}[${index}]`, val, depth + 1));
+            });
+          }
+
+          details.appendChild(content);
+          return details;
+        }
+      });
+    </script>
+  </body>
+</html>

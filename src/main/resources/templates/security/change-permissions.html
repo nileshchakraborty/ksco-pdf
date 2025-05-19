@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" th:dir="#{language.direction}" th:data-language="${#locale.toString()}" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <th:block th:insert="~{fragments/common :: head(title=#{permissions.title}, header=#{permissions.header})}"></th:block>
+    <link rel="stylesheet" th:href="@{'/css/theme/theme.css'}">
+    <link rel="stylesheet" th:href="@{'/css/theme/componentes.css'}">
+  </head>
+
+  <body>
+    <div id="page-container">
+      <div id="content-wrap">
+        <th:block th:insert="~{fragments/navbar.html :: navbar}"></th:block>
+        
+        <main class="md-main">
+          <div class="container">
+            <div class="md-card">
+              <div class="md-card-header">
+                <span class="material-symbols-rounded md-icon">admin_panel_settings</span>
+                <h1 class="md-title" th:text="#{permissions.header}"></h1>
+              </div>
+
+              <div class="md-card-content">
+                <!-- Warning Message -->
+                <div class="md-alert md-alert--warning">
+                  <span class="material-symbols-rounded">warning</span>
+                  <span th:text="#{permissions.warning}"></span>
+                </div>
+
+                <form th:action="@{'api/v1/security/add-password'}" method="post" enctype="multipart/form-data" class="md-form">
+                  
+                  <!-- File Upload Section -->
+                  <div class="md-file-drop-zone" id="dropZone">
+                    <div class="md-file-drop-zone-content">
+                      <span class="material-symbols-rounded md-icon">upload_file</span>
+                      <div class="md-file-drop-title" th:text="#{common.dragAndDrop}"></div>
+                      <div class="md-file-drop-subtitle" th:text="#{common.or}"></div>
+                      <label class="md-button md-button--filled">
+                        <span th:text="#{common.browse}"></span>
+                        <input type="file" name="fileInput" accept="application/pdf" required hidden>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="md-file-list" id="fileList" style="display: none;">
+                    <div class="md-file-item">
+                      <span class="material-symbols-rounded md-icon">description</span>
+                      <span class="md-file-name"></span>
+                      <button type="button" class="md-button md-button--icon" id="removeFile">
+                        <span class="material-symbols-rounded">close</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Permissions Section -->
+                  <div class="md-form-group">
+                    <label class="md-form-group__label" th:text="#{permissions.selectText.2}"></label>
+                    
+                    <!-- Permissions Grid -->
+                    <div class="md-permissions-grid">
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventAssembly" name="preventAssembly">
+                        <label class="md-checkbox__label" for="preventAssembly">
+                          <span class="material-symbols-rounded">integration_instructions</span>
+                          <span th:text="#{permissions.selectText.3}"></span>
+                        </label>
+                      </div>
+
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventExtractContent" name="preventExtractContent">
+                        <label class="md-checkbox__label" for="preventExtractContent">
+                          <span class="material-symbols-rounded">content_copy</span>
+                          <span th:text="#{permissions.selectText.4}"></span>
+                        </label>
+                      </div>
+
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventExtractForAccessibility" name="preventExtractForAccessibility">
+                        <label class="md-checkbox__label" for="preventExtractForAccessibility">
+                          <span class="material-symbols-rounded">accessibility</span>
+                          <span th:text="#{permissions.selectText.5}"></span>
+                        </label>
+                      </div>
+
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventFillInForm" name="preventFillInForm">
+                        <label class="md-checkbox__label" for="preventFillInForm">
+                          <span class="material-symbols-rounded">edit_note</span>
+                          <span th:text="#{permissions.selectText.6}"></span>
+                        </label>
+                      </div>
+
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventModify" name="preventModify">
+                        <label class="md-checkbox__label" for="preventModify">
+                          <span class="material-symbols-rounded">edit</span>
+                          <span th:text="#{permissions.selectText.7}"></span>
+                        </label>
+                      </div>
+
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventModifyAnnotations" name="preventModifyAnnotations">
+                        <label class="md-checkbox__label" for="preventModifyAnnotations">
+                          <span class="material-symbols-rounded">add_comment</span>
+                          <span th:text="#{permissions.selectText.8}"></span>
+                        </label>
+                      </div>
+
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventPrinting" name="preventPrinting">
+                        <label class="md-checkbox__label" for="preventPrinting">
+                          <span class="material-symbols-rounded">print</span>
+                          <span th:text="#{permissions.selectText.9}"></span>
+                        </label>
+                      </div>
+
+                      <div class="md-checkbox md-checkbox--with-icon">
+                        <input type="checkbox" class="md-checkbox__input" id="preventPrintingFaithful" name="preventPrintingFaithful">
+                        <label class="md-checkbox__label" for="preventPrintingFaithful">
+                          <span class="material-symbols-rounded">print_disable</span>
+                          <span th:text="#{permissions.selectText.10}"></span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Submit Button -->
+                  <button type="submit" id="submitBtn" class="md-button md-button--filled md-button--primary">
+                    <span class="material-symbols-rounded">save</span>
+                    <span th:text="#{permissions.submit}"></span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </main>
+        
+        <th:block th:insert="~{fragments/footer.html :: footer}"></th:block>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script th:src="@{'/js/material-theme.js'}"></script>
+    <script th:src="@{'/js/pages/change-permissions.js'}"></script>
+  </body>
+</html>

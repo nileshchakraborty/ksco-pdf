@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" th:dir="#{language.direction}" th:data-language="${#locale.toString()}" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <th:block th:insert="~{fragments/common :: head(title=#{certSign.title}, header=#{certSign.header})}"></th:block>
+  </head>
+
+  <body>
+    <div id="page-container">
+      <div id="content-wrap">
+        <th:block th:insert="~{fragments/navbar.html :: navbar}"></th:block>
+        <div class="container mt-4">
+          <div class="row justify-content-center">
+            <div class="col-md-8">
+              <md-card class="p-4">
+                <div class="tool-header mb-4">
+                  <md-icon class="tool-header-icon security">workspace_premium</md-icon>
+                  <span class="tool-header-text" th:text="#{certSign.header}"></span>
+                </div>
+
+                <form th:action="@{'api/v1/security/cert-sign'}" method="post" enctype="multipart/form-data">
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    type="label"
+                    th:label="#{certSign.selectPDF}"
+                    readonly>
+                  </md-filled-text-field>
+
+                  <md-filled-button class="file-input-button w-100 mb-4">
+                    <label for="fileInput" class="w-100">
+                      <span th:text="#{common.chooseFile}"></span>
+                      <input type="file" class="d-none" id="fileInput" name="fileInput" required accept="application/pdf">
+                    </label>
+                  </md-filled-button>
+
+                  <div id="fileDisplay" class="mb-4 d-none">
+                    <md-chip-set>
+                      <md-assist-chip id="selectedFile"></md-assist-chip>
+                    </md-chip-set>
+                  </div>
+
+                  <md-text>
+                    <small class="text-muted" th:text="#{certSign.jksNote}"></small>
+                  </md-text>
+
+                  <md-select
+                    class="w-100 mb-4"
+                    id="certType"
+                    name="certType"
+                    th:label="#{certSign.certType}">
+                    <md-select-option value="">
+                      <div slot="headline" th:text="#{selectFillter}"></div>
+                    </md-select-option>
+                    <md-select-option value="PEM">
+                      <div slot="headline">PEM</div>
+                    </md-select-option>
+                    <md-select-option value="PKCS12">
+                      <div slot="headline">PKCS12</div>
+                    </md-select-option>
+                    <md-select-option value="JKS">
+                      <div slot="headline">JKS</div>
+                    </md-select-option>
+                  </md-select>
+
+                  <div id="pemGroup" style="display: none;">
+                    <md-filled-text-field
+                      class="w-100 mb-4"
+                      type="label"
+                      th:label="#{certSign.selectKey}"
+                      readonly>
+                    </md-filled-text-field>
+
+                    <md-filled-button class="file-input-button w-100 mb-4">
+                      <label for="privateKeyFile" class="w-100">
+                        <span th:text="#{common.chooseFile}"></span>
+                        <input type="file" class="d-none" id="privateKeyFile" name="privateKeyFile" accept=".pem,.der">
+                      </label>
+                    </md-filled-button>
+
+                    <div id="keyDisplay" class="mb-4 d-none">
+                      <md-chip-set>
+                        <md-assist-chip id="selectedKey"></md-assist-chip>
+                      </md-chip-set>
+                    </div>
+
+                    <md-filled-text-field
+                      class="w-100 mb-4"
+                      type="label"
+                      th:label="#{certSign.selectCert}"
+                      readonly>
+                    </md-filled-text-field>
+
+                    <md-filled-button class="file-input-button w-100 mb-4">
+                      <label for="certFile" class="w-100">
+                        <span th:text="#{common.chooseFile}"></span>
+                        <input type="file" class="d-none" id="certFile" name="certFile" accept=".pem,.der">
+                      </label>
+                    </md-filled-button>
+
+                    <div id="certDisplay" class="mb-4 d-none">
+                      <md-chip-set>
+                        <md-assist-chip id="selectedCert"></md-assist-chip>
+                      </md-chip-set>
+                    </div>
+                  </div>
+
+                  <div id="p12Group" style="display: none;">
+                    <md-filled-text-field
+                      class="w-100 mb-4"
+                      type="label"
+                      th:label="#{certSign.selectP12}"
+                      readonly>
+                    </md-filled-text-field>
+
+                    <md-filled-button class="file-input-button w-100 mb-4">
+                      <label for="p12File" class="w-100">
+                        <span th:text="#{common.chooseFile}"></span>
+                        <input type="file" class="d-none" id="p12File" name="p12File" accept=".p12,.pfx">
+                      </label>
+                    </md-filled-button>
+
+                    <div id="p12Display" class="mb-4 d-none">
+                      <md-chip-set>
+                        <md-assist-chip id="selectedP12"></md-assist-chip>
+                      </md-chip-set>
+                    </div>
+                  </div>
+
+                  <div id="jksGroup" style="display: none;">
+                    <md-filled-text-field
+                      class="w-100 mb-4"
+                      type="label"
+                      th:label="#{certSign.selectJKS}"
+                      readonly>
+                    </md-filled-text-field>
+
+                    <md-filled-button class="file-input-button w-100 mb-4">
+                      <label for="jksFile" class="w-100">
+                        <span th:text="#{common.chooseFile}"></span>
+                        <input type="file" class="d-none" id="jksFile" name="jksFile" accept=".jks,.keystore">
+                      </label>
+                    </md-filled-button>
+
+                    <div id="jksDisplay" class="mb-4 d-none">
+                      <md-chip-set>
+                        <md-assist-chip id="selectedJks"></md-assist-chip>
+                      </md-chip-set>
+                    </div>
+                  </div>
+
+                  <md-outlined-text-field
+                    class="w-100 mb-4"
+                    type="password"
+                    id="password"
+                    name="password"
+                    th:label="#{certSign.password}">
+                  </md-outlined-text-field>
+
+                  <md-checkbox id="showSignature" name="showSignature" class="mb-4">
+                    <span th:text="#{certSign.showSig}"></span>
+                  </md-checkbox>
+
+                  <div id="signatureDetails" style="display: none;">
+                    <md-outlined-text-field
+                      class="w-100 mb-4"
+                      id="reason"
+                      name="reason"
+                      th:label="#{certSign.reason}">
+                    </md-outlined-text-field>
+
+                    <md-outlined-text-field
+                      class="w-100 mb-4"
+                      id="location"
+                      name="location"
+                      th:label="#{certSign.location}">
+                    </md-outlined-text-field>
+
+                    <md-outlined-text-field
+                      class="w-100 mb-4"
+                      id="name"
+                      name="name"
+                      th:label="#{certSign.name}">
+                    </md-outlined-text-field>
+
+                    <md-outlined-text-field
+                      class="w-100 mb-4"
+                      type="number"
+                      id="pageNumber"
+                      name="pageNumber"
+                      th:label="#{pageNum}"
+                      min="1"
+                      value="1">
+                    </md-outlined-text-field>
+
+                    <md-checkbox id="showLogo" name="showLogo" checked class="mb-4">
+                      <span th:text="#{certSign.showLogo}"></span>
+                    </md-checkbox>
+                  </div>
+
+                  <md-filled-button type="submit" id="submitBtn">
+                    <span th:text="#{certSign.submit}"></span>
+                  </md-filled-button>
+                </form>
+              </md-card>
+            </div>
+          </div>
+        </div>
+      </div>
+      <th:block th:insert="~{fragments/footer.html :: footer}"></th:block>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('fileInput');
+        const fileDisplay = document.getElementById('fileDisplay');
+        const selectedFile = document.getElementById('selectedFile');
+        const privateKeyFile = document.getElementById('privateKeyFile');
+        const keyDisplay = document.getElementById('keyDisplay');
+        const selectedKey = document.getElementById('selectedKey');
+        const certFile = document.getElementById('certFile');
+        const certDisplay = document.getElementById('certDisplay');
+        const selectedCert = document.getElementById('selectedCert');
+        const p12File = document.getElementById('p12File');
+        const p12Display = document.getElementById('p12Display');
+        const selectedP12 = document.getElementById('selectedP12');
+        const jksFile = document.getElementById('jksFile');
+        const jksDisplay = document.getElementById('jksDisplay');
+        const selectedJks = document.getElementById('selectedJks');
+
+        // Handle file selection display
+        const setupFileInput = (input, display, chip) => {
+          if (!input) return;
+          input.addEventListener('change', function() {
+            if (this.files.length > 0) {
+              display.classList.remove('d-none');
+              chip.textContent = this.files[0].name;
+            } else {
+              display.classList.add('d-none');
+            }
+          });
+        };
+
+        setupFileInput(fileInput, fileDisplay, selectedFile);
+        setupFileInput(privateKeyFile, keyDisplay, selectedKey);
+        setupFileInput(certFile, certDisplay, selectedCert);
+        setupFileInput(p12File, p12Display, selectedP12);
+        setupFileInput(jksFile, jksDisplay, selectedJks);
+
+        // Handle certificate type selection
+        document.getElementById('certType').addEventListener('change', function() {
+          const pemGroup = document.getElementById('pemGroup');
+          const p12Group = document.getElementById('p12Group');
+          const jksGroup = document.getElementById('jksGroup');
+          const valueToGroupMap = {
+            'PEM': pemGroup,
+            'PKCS12': p12Group,
+            'JKS': jksGroup
+          };
+
+          for (let key in valueToGroupMap) {
+            if (valueToGroupMap[key]) {
+              valueToGroupMap[key].style.display = this.value === key ? 'block' : 'none';
+            }
+          }
+        });
+
+        // Handle signature details visibility
+        document.getElementById('showSignature').addEventListener('change', function() {
+          document.getElementById('signatureDetails').style.display = this.checked ? 'block' : 'none';
+        });
+      });
+    </script>
+  </body>
+</html>

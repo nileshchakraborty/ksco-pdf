@@ -1,0 +1,30 @@
+services:
+  ksco-pdf:
+    container_name: ksco-PDF-Ultra-Lite
+    image: docker.kscoPDF.com/kscotools/ksco-pdf:latest-ultra-lite
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/v1/info/status | grep -q 'UP' && curl -fL http://localhost:8080/ | grep -qv 'Please sign in'"]
+      interval: 5s
+      timeout: 10s
+      retries: 16
+    ports:
+      - "8080:8080"
+    volumes:
+      - /ksco/latest/config:/configs:rw
+      - /ksco/latest/logs:/logs:rw
+    environment:
+      DOCKER_ENABLE_SECURITY: "false"
+      SECURITY_ENABLELOGIN: "false"
+      SYSTEM_DEFAULTLOCALE: en-US
+      UI_APPNAME: ksco-PDF-Ultra-lite
+      UI_HOMEDESCRIPTION: Demo site for ksco-PDF-Ultra-lite Latest
+      UI_APPNAMENAVBAR: ksco-PDF-Ultra-lite Latest
+      SYSTEM_MAXFILESIZE: "100"
+      METRICS_ENABLED: "true"
+      SYSTEM_GOOGLEVISIBILITY: "true"
+      SHOW_SURVEY: "true"
+    restart: on-failure:5

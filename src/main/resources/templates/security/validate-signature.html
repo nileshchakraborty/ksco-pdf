@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" th:dir="#{language.direction}" th:data-language="${#locale.toString()}" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <th:block th:insert="~{fragments/common :: head(title=#{validateSignature.title}, header=#{validateSignature.header})}"></th:block>
+  </head>
+  <body>
+    <div id="page-container">
+      <div id="content-wrap">
+        <th:block th:insert="~{fragments/navbar.html :: navbar}"></th:block>
+        <div class="container mt-4">
+          <div class="row justify-content-center">
+            <div class="col-md-8">
+              <md-card class="p-4">
+                <div class="tool-header mb-4">
+                  <md-icon class="tool-header-icon security">verified</md-icon>
+                  <span class="tool-header-text" th:text="#{validateSignature.header}"></span>
+                </div>
+
+                <form id="pdfForm" th:action="@{'api/v1/security/validate-signature'}" method="post" enctype="multipart/form-data">
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    type="label"
+                    th:label="#{validateSignature.selectPDF}"
+                    readonly>
+                  </md-filled-text-field>
+
+                  <md-filled-button class="file-input-button w-100 mb-4">
+                    <label for="fileInput" class="w-100">
+                      <span th:text="#{common.chooseFile}"></span>
+                      <input type="file" class="d-none" id="fileInput" name="fileInput" required accept="application/pdf">
+                    </label>
+                  </md-filled-button>
+
+                  <div id="fileDisplay" class="mb-4 d-none">
+                    <md-chip-set>
+                      <md-assist-chip id="selectedFile"></md-assist-chip>
+                    </md-chip-set>
+                  </div>
+
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    type="label"
+                    th:label="#{validateSignature.selectCustomCert}"
+                    readonly>
+                  </md-filled-text-field>
+
+                  <md-filled-button class="file-input-button w-100 mb-4">
+                    <label for="certFile" class="w-100">
+                      <span th:text="#{common.chooseFile}"></span>
+                      <input type="file" class="d-none" id="certFile" name="certFile" accept=".cer,.crt,.pem">
+                    </label>
+                  </md-filled-button>
+
+                  <div id="certDisplay" class="mb-4 d-none">
+                    <md-chip-set>
+                      <md-assist-chip id="selectedCert"></md-assist-chip>
+                    </md-chip-set>
+                  </div>
+
+                  <md-filled-button type="submit" id="submitBtn">
+                    <span th:text="#{validateSignature.submit}"></span>
+                  </md-filled-button>
+                </form>
+                
+                <!-- Results section -->
+                <div id="results" style="display: none;" class="mt-4">
+                  <md-headline5 class="mb-4" th:text="#{validateSignature.results}"></md-headline5>
+                  <div id="signatures-list"></div>
+                </div>
+              </md-card>
+            </div>
+          </div>
+        </div>
+      </div>
+      <th:block th:insert="~{fragments/footer.html :: footer}"></th:block>
+    </div>
+
+    <template id="signature-template">
+      <md-elevation class="signature-card p-4 mb-4" level="1">
+        <md-headline6 class="mb-3"></md-headline6>
+        <div class="status-indicator mb-3">
+          <md-icon class="status-icon me-2"></md-icon>
+          <span class="status-text"></span>
+        </div>
+        <div class="signature-details"></div>
+        <md-divider class="my-3"></md-divider>
+        <div class="cert-details"></div>
+      </md-elevation>
+    </template>
+
+<script th:inline="javascript">
+const translations = JSON.parse(`{
+  "signature": "[(#{validateSignature.signature})]",
+  "signatureInfo": "[(#{validateSignature.signature.info})]",
+  "certInfo": "[(#{validateSignature.cert.info})]",
+  "signer": "[(#{validateSignature.signer})]",
+  "date": "[(#{validateSignature.date})]",
+  "reason": "[(#{validateSignature.reason})]",
+  "location": "[(#{validateSignature.location})]",
+  "noSignatures": "[(#{validateSignature.noSignatures})]",
+  "statusValid": "[(#{validateSignature.status.valid})]",
+  "statusInvalid": "[(#{validateSignature.status.invalid})]",
+  "mathValid": "[(#{validateSignature.signature.mathValid})]",
+  "chainInvalid": "[(#{validateSignature.chain.invalid})]",
+  "trustInvalid": "[(#{validateSignature.trust.invalid})]",
+  "certExpired": "[(#{validateSignature.cert.expired})]",
+  "certRevoked": "[(#{validateSignature.cert.revoked})]",
+  "certIssuer": "[(#{validateSignature.cert.issuer})]",
+  "certSubject": "[(#{validateSignature.cert.subject})]",
+  "certSerialNumber": "[(#{validateSignature.cert.serialNumber})]",
+  "certValidFrom": "[(#{validateSignature.cert.validFrom})]",
+  "certValidUntil": "[(#{validateSignature.cert.validUntil})]",
+  "certAlgorithm": "[(#{validateSignature.cert.algorithm})]",
+  "certKeySize": "[(#{validateSignature.cert.keySize})]",
+  "certBits": "[(#{validateSignature.cert.bits})]",
+  "certVersion": "[(#{validateSignature.cert.version})]",
+  "certKeyUsage": "[(#{validateSignature.cert.keyUsage})]",
+  "certSelfSigned": "[(#{validateSignature.cert.selfSigned})]",
+  "yes": "[(#{yes})]",
+  "no": "[(#{no})]",
+  "selectPDF": "[(#{validateSignature.selectPDF})]"
+}`);
+
+function escapeHtml(unsafe) {
+    return unsafe
+        ?.toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;") || 'N/A';
+}
+
+function createSignatureCard(signature, index) {
+    const template = document.getElementById('signature-template');
+    const card = template.content.cloneNode(true).firstElementChild;
+    
+    const title = card.querySelector('md-headline6');
+    title.textContent = `${translations.signature} ${index + 1}`;
+
+    const statusIcon = card.querySelector('.status-icon');
+    const statusText = card.querySelector('.status-text');
+    
+    if (signature.valid) {
+        statusIcon.textContent = 'check_circle';
+        statusIcon.style.color = 'var(--md-sys-color-success)';
+        statusText.textContent = translations.statusValid;
+    } else {
+        statusIcon.textContent = 'error';
+        statusIcon.style.color = 'var(--md-sys-color-error)';
+        statusText.textContent = translations.statusInvalid;
+    }
+
+    const signatureDetails = card.querySelector('.signature-details');
+    signatureDetails.innerHTML = `
+        <md-list>
+            <md-list-item>
+                <md-icon slot="start">person</md-icon>
+                <div slot="headline">${translations.signer}</div>
+                <div slot="supporting-text">${escapeHtml(signature.signer)}</div>
+            </md-list-item>
+            <md-list-item>
+                <md-icon slot="start">calendar_today</md-icon>
+                <div slot="headline">${translations.date}</div>
+                <div slot="supporting-text">${escapeHtml(signature.date)}</div>
+            </md-list-item>
+            ${signature.reason ? `
+                <md-list-item>
+                    <md-icon slot="start">description</md-icon>
+                    <div slot="headline">${translations.reason}</div>
+                    <div slot="supporting-text">${escapeHtml(signature.reason)}</div>
+                </md-list-item>
+            ` : ''}
+            ${signature.location ? `
+                <md-list-item>
+                    <md-icon slot="start">location_on</md-icon>
+                    <div slot="headline">${translations.location}</div>
+                    <div slot="supporting-text">${escapeHtml(signature.location)}</div>
+                </md-list-item>
+            ` : ''}
+        </md-list>
+    `;
+
+    const certDetails = card.querySelector('.cert-details');
+    if (signature.certificate) {
+        certDetails.innerHTML = `
+            <md-list>
+                <md-list-item>
+                    <md-icon slot="start">verified_user</md-icon>
+                    <div slot="headline">${translations.certIssuer}</div>
+                    <div slot="supporting-text">${escapeHtml(signature.certificate.issuer)}</div>
+                </md-list-item>
+                <md-list-item>
+                    <md-icon slot="start">person</md-icon>
+                    <div slot="headline">${translations.certSubject}</div>
+                    <div slot="supporting-text">${escapeHtml(signature.certificate.subject)}</div>
+                </md-list-item>
+                <md-list-item>
+                    <md-icon slot="start">confirmation_number</md-icon>
+                    <div slot="headline">${translations.certSerialNumber}</div>
+                    <div slot="supporting-text">${escapeHtml(signature.certificate.serialNumber)}</div>
+                </md-list-item>
+                <md-list-item>
+                    <md-icon slot="start">date_range</md-icon>
+                    <div slot="headline">${translations.certValidFrom}</div>
+                    <div slot="supporting-text">${escapeHtml(signature.certificate.validFrom)}</div>
+                </md-list-item>
+                <md-list-item>
+                    <md-icon slot="start">event</md-icon>
+                    <div slot="headline">${translations.certValidUntil}</div>
+                    <div slot="supporting-text">${escapeHtml(signature.certificate.validUntil)}</div>
+                </md-list-item>
+            </md-list>
+        `;
+    }
+
+    return card;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('fileInput');
+    const fileDisplay = document.getElementById('fileDisplay');
+    const selectedFile = document.getElementById('selectedFile');
+    const certInput = document.getElementById('certFile');
+    const certDisplay = document.getElementById('certDisplay');
+    const selectedCert = document.getElementById('selectedCert');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileDisplay.classList.remove('d-none');
+            selectedFile.textContent = this.files[0].name;
+        } else {
+            fileDisplay.classList.add('d-none');
+        }
+    });
+
+    certInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            certDisplay.classList.remove('d-none');
+            selectedCert.textContent = this.files[0].name;
+        } else {
+            certDisplay.classList.add('d-none');
+        }
+    });
+
+    document.querySelector('#pdfForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!fileInput.files.length) {
+            const dialog = document.createElement('md-dialog');
+            dialog.innerHTML = `
+                <div slot="headline">${escapeHtml(translations.selectPDF)}</div>
+                <div slot="content">Please select a PDF file to validate signatures.</div>
+                <div slot="actions">
+                    <md-text-button onclick="this.closest('md-dialog').close()">OK</md-text-button>
+                </div>
+            `;
+            document.body.appendChild(dialog);
+            dialog.show();
+            return;
+        }
+
+        const results = [];
+        for (const file of fileInput.files) {
+            const formData = new FormData();
+            formData.append('fileInput', file);
+            
+            if (certInput.files.length > 0) {
+                formData.append('certFile', certInput.files[0]);
+            }
+
+            try {
+                const response = await fetch('api/v1/security/validate-signature', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                results.push(...data);
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        const resultsDiv = document.getElementById('results');
+        const signaturesList = document.getElementById('signatures-list');
+        signaturesList.innerHTML = '';
+
+        if (results.length === 0) {
+            signaturesList.innerHTML = `
+                <md-elevation class="p-4" level="1">
+                    <div class="d-flex align-items-center">
+                        <md-icon class="me-2">info</md-icon>
+                        <span>${translations.noSignatures}</span>
+                    </div>
+                </md-elevation>
+            `;
+        } else {
+            results.forEach((signature, index) => {
+                signaturesList.appendChild(createSignatureCard(signature, index));
+            });
+        }
+
+        resultsDiv.style.display = 'block';
+    });
+});
+</script>
+
+  </body>
+</html>

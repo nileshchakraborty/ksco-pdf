@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" th:dir="#{language.direction}" th:data-language="${#locale.toString()}"
+  xmlns:th="https://www.thymeleaf.org">
+
+<head>
+  <th:block th:insert="~{fragments/material-common :: head(title=#{merge.title})}"></th:block>
+  <link rel="stylesheet" th:href="@{'/css/material-theme.css'}">
+  <link rel="stylesheet" th:href="@{'/css/merge.css'}">
+</head>
+
+<body class="md-body">
+  <div class="md-layout">
+    <th:block th:insert="~{fragments/material-common :: nav}"></th:block>
+    
+    <main class="md-main">
+      <div class="md-container">
+        <th:block th:insert="~{fragments/multi-toolAdvert.html :: multi-toolAdvert}"></th:block>
+        
+        <div class="md-card md-elevation-1" id="dropContainer">
+          <div class="md-card-header">
+            <span class="material-icons md-title-icon">add_to_photos</span>
+            <h2 class="md-card-title" th:text="#{merge.header}"></h2>
+          </div>
+          
+          <div class="md-card-content">
+            <form th:action="@{'api/v1/general/merge-pdfs'}" method="post" enctype="multipart/form-data" class="md-form">
+              <div class="md-form-field">
+                <label class="md-label" th:text="#{multiPdfDropPrompt}" for="fileInput-input"></label>
+                <div class="md-file-upload" th:replace="~{fragments/common :: fileSelector(name='fileInput', multipleInputsForSingleRequest=true, accept='application/pdf')}">
+                </div>
+              </div>
+
+              <div class="md-form-field">
+                <label class="md-checkbox">
+                  <input type="checkbox" name="removeCertSign" id="removeCertSign">
+                  <span class="md-checkbox-label" th:text="#{merge.removeCertSign}"></span>
+                </label>
+              </div>
+
+              <div class="md-form-field">
+                <ul id="selectedFiles" class="md-list"></ul>
+              </div>
+
+              <div class="md-button-group">
+                <button type="button" id="sortByNameBtn" class="md-button md-button-secondary">
+                  <span class="material-icons">sort_by_alpha</span>
+                  <span th:text="#{merge.sortByName}"></span>
+                </button>
+                <button type="button" id="sortByDateBtn" class="md-button md-button-secondary">
+                  <span class="material-icons">schedule</span>
+                  <span th:text="#{merge.sortByDate}"></span>
+                </button>
+              </div>
+
+              <div class="md-form-actions">
+                <button type="button" id="resetFileInputBtn" class="md-button md-button-danger">
+                  <span class="material-icons">restart_alt</span>
+                  <span th:text="#{reset}"></span>
+                </button>
+                <button type="submit" id="submitBtn" class="md-button md-button-primary">
+                  <span class="material-icons">merge</span>
+                  <span th:text="#{merge.submit}"></span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <th:block th:insert="~{fragments/material-common :: footer}"></th:block>
+  </div>
+
+  <!-- Hidden translations -->
+  <span id="pageTranslation" th:text="#{page}" class="md-hidden"></span>
+  <span id="pagesTranslation" th:text="#{pages}" class="md-hidden"></span>
+
+  <!-- Scripts -->
+  <script type="module">
+    import * as pdfjsLib from './pdfjs-legacy/pdf.mjs';
+    pdfjsLib.GlobalWorkerOptions.workerSrc = './pdfjs-legacy/pdf.worker.mjs';
+  </script>
+  <script th:src="@{'/js/merge.js'}"></script>
+  <script th:src="@{'/js/material-theme.js'}"></script>
+</body>
+
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" th:dir="#{language.direction}" th:data-language="${#locale.toString()}" xmlns:th="https://www.thymeleaf.org">
+  <head>
+    <th:block th:insert="~{fragments/common :: head(title=#{watermark.title}, header=#{watermark.header})}"></th:block>
+  </head>
+
+  <body onload="toggleFileOption()">
+    <div id="page-container">
+      <div id="content-wrap">
+        <th:block th:insert="~{fragments/navbar.html :: navbar}"></th:block>
+        <div class="container mt-4">
+          <div class="row justify-content-center">
+            <div class="col-md-8">
+              <md-card class="p-4">
+                <div class="tool-header mb-4">
+                  <md-icon class="tool-header-icon security">water_drop</md-icon>
+                  <span class="tool-header-text" th:text="#{watermark.header}"></span>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" th:action="@{'api/v1/security/add-watermark'}">
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    type="label"
+                    th:label="#{watermark.selectText.1}"
+                    readonly>
+                  </md-filled-text-field>
+
+                  <md-filled-button class="file-input-button w-100 mb-4">
+                    <label for="fileInput" class="w-100">
+                      <span th:text="#{common.chooseFile}"></span>
+                      <input type="file" class="d-none" id="fileInput" name="fileInput" required accept="application/pdf">
+                    </label>
+                  </md-filled-button>
+
+                  <div id="fileDisplay" class="mb-4 d-none">
+                    <md-chip-set>
+                      <md-assist-chip id="selectedFile"></md-assist-chip>
+                    </md-chip-set>
+                  </div>
+
+                  <md-select
+                    class="w-100 mb-4"
+                    id="watermarkType"
+                    name="watermarkType"
+                    th:label="#{watermark.selectText.8}"
+                    onchange="toggleFileOption()">
+                    <md-select-option value="text" selected>
+                      <div slot="headline" th:text="#{watermark.type.1}"></div>
+                    </md-select-option>
+                    <md-select-option value="image">
+                      <div slot="headline" th:text="#{watermark.type.2}"></div>
+                    </md-select-option>
+                  </md-select>
+
+                  <md-select
+                    class="w-100 mb-4"
+                    id="alphabet-select"
+                    name="alphabet"
+                    th:label="#{alphabet}">
+                    <md-select-option value="roman" selected>
+                      <div slot="headline">Roman</div>
+                    </md-select-option>
+                    <md-select-option value="arabic">
+                      <div slot="headline">العربية</div>
+                    </md-select-option>
+                    <md-select-option value="japanese">
+                      <div slot="headline">日本語</div>
+                    </md-select-option>
+                    <md-select-option value="korean">
+                      <div slot="headline">한국어</div>
+                    </md-select-option>
+                    <md-select-option value="chinese">
+                      <div slot="headline">简体中文</div>
+                    </md-select-option>
+                  </md-select>
+
+                  <div id="watermarkTextGroup">
+                    <md-filled-text-field
+                      class="w-100 mb-4"
+                      id="watermarkText"
+                      name="watermarkText"
+                      th:label="#{watermark.selectText.2}"
+                      placeholder="KSCO-PDF"
+                      required>
+                    </md-filled-text-field>
+                  </div>
+
+                  <div id="watermarkImageGroup" style="display: none;">
+                    <md-filled-text-field
+                      class="w-100 mb-4"
+                      type="label"
+                      th:label="#{watermark.selectText.9}"
+                      readonly>
+                    </md-filled-text-field>
+
+                    <md-filled-button class="file-input-button w-100 mb-4">
+                      <label for="watermarkImage" class="w-100">
+                        <span th:text="#{common.chooseFile}"></span>
+                        <input type="file" class="d-none" id="watermarkImage" name="watermarkImage" accept="image/*">
+                      </label>
+                    </md-filled-button>
+
+                    <div id="imageDisplay" class="mb-4 d-none">
+                      <md-chip-set>
+                        <md-assist-chip id="selectedImage"></md-assist-chip>
+                      </md-chip-set>
+                    </div>
+                  </div>
+
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    id="fontSize"
+                    name="fontSize"
+                    type="number"
+                    th:label="#{watermark.selectText.3}"
+                    value="30">
+                  </md-filled-text-field>
+
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    id="opacity"
+                    name="opacityText"
+                    th:label="#{watermark.selectText.7}"
+                    value="50"
+                    onblur="updateOpacityValue()">
+                  </md-filled-text-field>
+                  <input type="hidden" id="opacityReal" name="opacity" value="0.5">
+
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    id="rotation"
+                    name="rotation"
+                    type="number"
+                    th:label="#{watermark.selectText.4}"
+                    value="45">
+                  </md-filled-text-field>
+
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    id="widthSpacer"
+                    name="widthSpacer"
+                    type="number"
+                    th:label="#{watermark.selectText.5}"
+                    value="50">
+                  </md-filled-text-field>
+
+                  <md-filled-text-field
+                    class="w-100 mb-4"
+                    id="heightSpacer"
+                    name="heightSpacer"
+                    type="number"
+                    th:label="#{watermark.selectText.6}"
+                    value="50">
+                  </md-filled-text-field>
+
+                  <md-filled-button type="submit" class="w-100">
+                    <span th:text="#{watermark.submit}"></span>
+                  </md-filled-button>
+                </form>
+              </md-card>
+            </div>
+          </div>
+        </div>
+      </div>
+      <th:block th:insert="~{fragments/footer.html :: footer}"></th:block>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('fileInput');
+        const fileDisplay = document.getElementById('fileDisplay');
+        const selectedFile = document.getElementById('selectedFile');
+        const watermarkImage = document.getElementById('watermarkImage');
+        const imageDisplay = document.getElementById('imageDisplay');
+        const selectedImage = document.getElementById('selectedImage');
+
+        fileInput.addEventListener('change', function() {
+          if (this.files.length > 0) {
+            fileDisplay.classList.remove('d-none');
+            selectedFile.textContent = this.files[0].name;
+          } else {
+            fileDisplay.classList.add('d-none');
+          }
+        });
+
+        watermarkImage?.addEventListener('change', function() {
+          if (this.files.length > 0) {
+            imageDisplay.classList.remove('d-none');
+            selectedImage.textContent = this.files[0].name;
+          } else {
+            imageDisplay.classList.add('d-none');
+          }
+        });
+
+        const opacityInput = document.getElementById('opacity');
+        const opacityRealInput = document.getElementById('opacityReal');
+
+        const updateOpacityValue = () => {
+          let percentageValue = parseFloat(opacityInput.value.replace('%', ''));
+          if (isNaN(percentageValue)) {
+            percentageValue = 0;
+          }
+          percentageValue = Math.min(Math.max(percentageValue, 0), 100);
+          opacityInput.value = `${percentageValue}`;
+          opacityRealInput.value = (percentageValue / 100).toFixed(2);
+        };
+
+        const appendPercentageSymbol = () => {
+          if (!opacityInput.value.endsWith('%')) {
+            opacityInput.value += '%';
+          }
+        };
+
+        opacityInput.addEventListener('focus', () => {
+          opacityInput.value = opacityInput.value.replace('%', '');
+        });
+
+        opacityInput.addEventListener('blur', () => {
+          updateOpacityValue();
+          appendPercentageSymbol();
+        });
+
+        // Set initial values
+        updateOpacityValue();
+        appendPercentageSymbol();
+      });
+
+      function toggleFileOption() {
+        const type = document.getElementById('watermarkType').value;
+        const textGroup = document.getElementById('watermarkTextGroup');
+        const imageGroup = document.getElementById('watermarkImageGroup');
+        const alphabetGroup = document.getElementById('alphabet-select').closest('.mb-4');
+
+        if (type === 'text') {
+          textGroup.style.display = 'block';
+          imageGroup.style.display = 'none';
+          alphabetGroup.style.display = 'block';
+          document.getElementById('watermarkText').required = true;
+          document.getElementById('watermarkImage').required = false;
+        } else {
+          textGroup.style.display = 'none';
+          imageGroup.style.display = 'block';
+          alphabetGroup.style.display = 'none';
+          document.getElementById('watermarkText').required = false;
+          document.getElementById('watermarkImage').required = true;
+        }
+      }
+    </script>
+  </body>
+</html>

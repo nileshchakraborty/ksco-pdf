@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<!-- Common Head Fragment -->
+<head th:fragment="head">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title} ?: 'KSCO PDF'">KSCO PDF</title>
+    
+    <!-- Material Design Icons and Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <!-- Material Theme CSS -->
+    <link rel="stylesheet" th:href="@{'/css/material-theme.css'}">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" th:href="@{'/favicon.ico'}">
+</head>
+
+<!-- Navigation Bar Fragment -->
+<nav th:fragment="nav" class="md-nav">
+    <div class="md-container">
+        <div class="nav-content">
+            <a href="/" class="nav-brand">
+                <img th:src="@{'/images/logo.png'}" alt="KSCO PDF" height="40">
+            </a>
+            <ul class="md-nav-list">
+                <li><a href="/" class="nav-link" th:classappend="${currentPage == 'home'} ? 'active' : ''">
+                    <span class="material-icons">home</span>
+                    <span th:text="#{navbar.home}">Home</span>
+                </a></li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle">
+                        <span class="material-icons">edit</span>
+                        <span th:text="#{navbar.tools}">Tools</span>
+                    </a>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-grid">
+                            <!-- Convert Section -->
+                            <div class="dropdown-section">
+                                <h6 th:text="#{navbar.convert}">Convert</h6>
+                                <a href="/merge-pdfs" class="dropdown-item">
+                                    <span class="material-icons">merge_type</span>
+                                    <span th:text="#{navbar.merge}">Merge PDFs</span>
+                                </a>
+                                <a href="/split-pdfs" class="dropdown-item">
+                                    <span class="material-icons">call_split</span>
+                                    <span th:text="#{navbar.split}">Split PDF</span>
+                                </a>
+                                <!-- Add more conversion tools -->
+                            </div>
+                            
+                            <!-- Edit Section -->
+                            <div class="dropdown-section">
+                                <h6 th:text="#{navbar.edit}">Edit</h6>
+                                <a href="/add-image" class="dropdown-item">
+                                    <span class="material-icons">image</span>
+                                    <span th:text="#{navbar.addImage}">Add Image</span>
+                                </a>
+                                <!-- Add more editing tools -->
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="/settings" class="nav-link" th:if="${@userService.isAuthenticated()}">
+                    <span class="material-icons">settings</span>
+                    <span th:text="#{navbar.settings}">Settings</span>
+                </a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="md-button theme-toggle" onclick="materialTheme.toggleTheme()">
+                    <span class="material-icons">dark_mode</span>
+                </button>
+                <div class="user-menu" th:if="${@userService.isAuthenticated()}">
+                    <button class="md-button">
+                        <span class="material-icons">account_circle</span>
+                        <span th:text="${@userService.getCurrentUser()}">Username</span>
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="/account" class="dropdown-item">
+                            <span class="material-icons">manage_accounts</span>
+                            <span th:text="#{navbar.account}">Account</span>
+                        </a>
+                        <a href="/logout" class="dropdown-item">
+                            <span class="material-icons">logout</span>
+                            <span th:text="#{navbar.logout}">Logout</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Footer Fragment -->
+<footer th:fragment="footer" class="md-footer">
+    <div class="md-container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h5>KSCO PDF</h5>
+                <p th:text="#{footer.description}">A modern, open-source PDF manipulation tool</p>
+            </div>
+            <div class="footer-section">
+                <h5 th:text="#{footer.links}">Links</h5>
+                <ul>
+                    <li><a href="https://github.com/ksco-Tools/ksco-PDF" target="_blank">GitHub</a></li>
+                    <li><a href="/api-docs">API</a></li>
+                    <li><a href="/privacy">Privacy</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h5 th:text="#{footer.community}">Community</h5>
+                <ul>
+                    <li><a href="https://discord.gg/HYmhKj45pU" target="_blank">Discord</a></li>
+                    <li><a href="https://github.com/ksco-Tools/ksco-PDF/discussions" target="_blank">Discussions</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> KSCO PDF. MIT License.</p>
+        </div>
+    </div>
+</footer>
+
+</html>

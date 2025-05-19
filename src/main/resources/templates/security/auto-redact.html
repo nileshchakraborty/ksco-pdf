@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" th:dir="#{language.direction}" th:data-language="${#locale.toString()}"
+  xmlns:th="https://www.thymeleaf.org">
+
+<head>
+  <th:block th:insert="~{fragments/common :: head(title=#{autoRedact.title}, header=#{autoRedact.header})}"></th:block>
+</head>
+
+<body>
+  <div id="page-container">
+    <div id="content-wrap">
+      <th:block th:insert="~{fragments/navbar.html :: navbar}"></th:block>
+      <div class="container mt-4">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <md-card class="p-4">
+              <div class="tool-header mb-4">
+                <svg class="material-symbols-rounded tool-header-icon security">
+                  <use xlink:href="/images/redact-auto.svg#icon-redact-auto"></use>
+                </svg>
+                <span class="tool-header-text" th:text="#{autoRedact.header}"></span>
+              </div>
+
+              <form th:action="@{'api/v1/security/auto-redact'}" method="post" enctype="multipart/form-data">
+                <md-filled-text-field
+                  class="w-100 mb-4"
+                  type="label"
+                  th:label="#{common.chooseFile}"
+                  readonly>
+                </md-filled-text-field>
+
+                <md-filled-button class="file-input-button w-100 mb-4">
+                  <label for="fileInput" class="w-100">
+                    <span th:text="#{common.chooseFile}"></span>
+                    <input type="file" class="d-none" id="fileInput" name="fileInput" required accept="application/pdf">
+                  </label>
+                </md-filled-button>
+
+                <div id="fileDisplay" class="mb-4 d-none">
+                  <md-chip-set>
+                    <md-assist-chip id="selectedFile"></md-assist-chip>
+                  </md-chip-set>
+                </div>
+
+                <md-outlined-text-field
+                  class="w-100 mb-4"
+                  type="textarea"
+                  rows="4"
+                  th:label="#{autoRedact.textsToRedactLabel}"
+                  id="listOfText"
+                  name="listOfText"
+                  required
+                  th:placeholder="#{autoRedact.textsToRedactPlaceholder}">
+                </md-outlined-text-field>
+
+                <md-outlined-select
+                  class="w-100 mb-4"
+                  id="defaultColor"
+                  name="defaultColor"
+                  th:label="#{autoRedact.colorLabel}"
+                  onchange="handleColorChange(this.value)">
+                  <md-select-option value="#000000" selected>
+                    <div slot="headline" th:text="#{black}"></div>
+                  </md-select-option>
+                  <md-select-option value="#FFFFFF">
+                    <div slot="headline" th:text="#{white}"></div>
+                  </md-select-option>
+                  <md-select-option value="#FF0000">
+                    <div slot="headline" th:text="#{red}"></div>
+                  </md-select-option>
+                  <md-select-option value="#00FF00">
+                    <div slot="headline" th:text="#{green}"></div>
+                  </md-select-option>
+                  <md-select-option value="#0000FF">
+                    <div slot="headline" th:text="#{blue}"></div>
+                  </md-select-option>
+                  <md-select-option value="custom">
+                    <div slot="headline" th:text="#{custom}"></div>
+                  </md-select-option>
+                </md-outlined-select>
+
+                <div id="customColorContainer" class="mb-4" style="display: none;">
+                  <md-outlined-text-field
+                    class="w-100"
+                    type="color"
+                    id="customColor"
+                    name="redactColor"
+                    th:label="#{autoRedact.colorLabel}"
+                    value="#FF00FF">
+                  </md-outlined-text-field>
+                </div>
+
+                <md-checkbox id="useRegex" name="useRegex" class="mb-4">
+                  <span th:text="#{autoRedact.useRegexLabel}"></span>
+                </md-checkbox>
+
+                <md-checkbox id="wholeWordSearch" name="wholeWordSearch" class="mb-4">
+                  <span th:text="#{autoRedact.wholeWordSearchLabel}"></span>
+                </md-checkbox>
+
+                <md-outlined-text-field
+                  class="w-100 mb-4"
+                  type="number"
+                  step="0.1"
+                  id="customPadding"
+                  name="customPadding"
+                  th:label="#{autoRedact.customPaddingLabel}"
+                  value="0.1">
+                </md-outlined-text-field>
+
+                <md-checkbox id="convertPDFToImage" name="convertPDFToImage" checked class="mb-4">
+                  <span th:text="#{autoRedact.convertPDFToImageLabel}"></span>
+                </md-checkbox>
+
+                <md-filled-button type="submit" id="submitBtn" class="w-100">
+                  <span th:text="#{autoRedact.submitButton}"></span>
+                </md-filled-button>
+              </form>
+            </md-card>
+          </div>
+        </div>
+      </div>
+    </div>
+    <th:block th:insert="~{fragments/footer.html :: footer}"></th:block>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const fileInput = document.getElementById('fileInput');
+      const fileDisplay = document.getElementById('fileDisplay');
+      const selectedFile = document.getElementById('selectedFile');
+
+      fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          fileDisplay.classList.remove('d-none');
+          selectedFile.textContent = this.files[0].name;
+        } else {
+          fileDisplay.classList.add('d-none');
+        }
+      });
+    });
+
+    function handleColorChange(selectedValue) {
+      const customColorContainer = document.getElementById('customColorContainer');
+      const customColor = document.getElementById('customColor');
+      
+      if (selectedValue === "custom") {
+        customColorContainer.style.display = 'block';
+      } else {
+        customColorContainer.style.display = 'none';
+        customColor.value = selectedValue;
+      }
+    }
+  </script>
+</body>
+</html>

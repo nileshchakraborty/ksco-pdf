@@ -1,0 +1,219 @@
+/* Material Card */
+.md-card {
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: var(--md-sys-elevation-2);
+  transition: box-shadow 0.3s ease;
+}
+
+.md-card:hover {
+  box-shadow: var(--md-sys-elevation-3);
+}
+
+/* File List */
+.list-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--md-sys-color-surface-container);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 1rem;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.list-group-item:hover {
+  background: var(--md-sys-color-surface-container-high);
+  transform: translateY(-2px);
+  box-shadow: var(--md-sys-elevation-1);
+}
+
+/* File Info */
+.file-info-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.md-file-icon {
+  color: var(--md-sys-color-primary);
+  font-size: 1.5rem;
+}
+
+.filename {
+  flex-grow: 1;
+  font-size: 1rem;
+  color: var(--md-sys-color-on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.page-count {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 0.875rem;
+  padding: 0.25rem 0.75rem;
+  background: var(--md-sys-color-surface-container-highest);
+  border-radius: 1rem;
+}
+
+/* Controls */
+.file-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.md-button {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.md-button:hover {
+  background: var(--md-sys-state-hover-opacity);
+}
+
+.md-button .material-icons {
+  color: var(--md-sys-color-on-surface-variant);
+  transition: transform 0.2s ease;
+}
+
+.move-up:hover .material-icons {
+  transform: translateY(-2px);
+}
+
+.move-down:hover .material-icons {
+  transform: translateY(2px);
+}
+
+.remove-file {
+  color: var(--md-sys-color-error);
+}
+
+.remove-file:hover {
+  background: var(--md-sys-color-error-container);
+}
+
+.remove-file:hover .material-icons {
+  color: var(--md-sys-color-on-error-container);
+  transform: rotate(90deg);
+}
+
+/* Drop Zone */
+#dropContainer {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px dashed var(--md-sys-color-outline-variant);
+  position: relative;
+}
+
+#dropContainer.drag-over {
+  border-color: var(--md-sys-color-primary);
+  background: var(--md-sys-color-surface-container-highest);
+  box-shadow: var(--md-sys-elevation-3);
+}
+
+#dropContainer.drag-over::after {
+  content: 'Drop PDF files here';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.25rem;
+  color: var(--md-sys-color-on-surface-variant);
+  pointer-events: none;
+}
+
+/* Snackbar */
+.md-snackbar {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(100%);
+  padding: 0.875rem 1.5rem;
+  min-width: 20rem;
+  max-width: 90vw;
+  background: var(--md-sys-color-inverse-surface);
+  color: var(--md-sys-color-inverse-on-surface);
+  border-radius: 0.25rem;
+  box-shadow: var(--md-sys-elevation-3);
+  z-index: 1000;
+  opacity: 0;
+  transition: transform 0.3s, opacity 0.3s;
+}
+
+.md-snackbar.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.md-snackbar.error {
+  background: var(--md-sys-color-error);
+  color: var(--md-sys-color-on-error);
+}
+
+/* Material Ripple */
+.md-ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: md-ripple-effect 0.6s linear;
+  background-color: var(--md-sys-state-hover-opacity);
+}
+
+@keyframes md-ripple-effect {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.list-group-item {
+  animation: fadeInUp 0.3s ease-out both;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .list-group-item {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .file-info-container {
+    width: 100%;
+  }
+  
+  .file-controls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  
+  .md-button {
+    width: 3rem;
+    height: 3rem;
+  }
+}
